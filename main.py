@@ -50,25 +50,20 @@ class Chat:
         # call the function on_connect
         self.client.on_connect = self.on_connect
 
-
+        self.client.will_set(self.topic, f"{self.username} has disconnected")
 
         # Connect to broker
         self.client.connect(BROKER, PORT)
 
     def on_message(self, client: type[paho.Client], userdata, message):
+        # We save the message as a list and remove the spaces so that we can check if it's not our username
+        list_check = message.payload.decode().split(" ")
+        if "<" in list_check[0]:
+            list_check[0] = list_check[0][1:-1]
+        if list_check[0] != self.username:
+            print(f"{message.payload.decode()}")
 
-        #  TODO: Implementera: När vi tar emot ett meddelande.
 
-
-        print(f"{message.payload.decode()}")
-
-
-        """
-        Avkoda meddelandet (message) och skriv ut det.
-        Skriv bara ut meddelandet om det börjar med någon annans användarnamn
-        (Dvs. Skriv inte ut meddelanden du själv skickat)
-
-        """
 
     def init_client(self):
         # Subscribe to selected topic
@@ -93,10 +88,7 @@ class Chat:
         # Start the paho client loop
         self.client.loop_start()
 
-
-        # TODO: Implementera: Skicka ett meddelande till chat-rummet att användaren har anslutit!
-        # Ex: Andreas has joined the chat
-
+        self.client.publish(topic=self.topic, payload=f"{self.username} has joined the chat", qos=2, retain=False)
 
     def run(self):
         self.init_client()
@@ -111,23 +103,19 @@ class Chat:
                 # Check if the user wants to exit the application
                 if msg_to_send.lower() == "quit":
 
-
-                    # TODO: Implementera: Om användaren vill avsluta ska vi skicka ett meddelande om det.
-                    # Ex: Andreas has left the chat
                     self.client.publish(topic=self.topic, payload=f"{self.username} has left the chat", qos=2, retain=False)
-
 
                     # Indicate to the input thread that it can exit
                     self.running = False
                     break
 
                 else:
-                    self.client.publish(topic=self.topic, payload=f"<{self.username}> {msg_to_send}", qos=2, retain=False)
-                # TODO: Implementera: Skicka meddelande till chatten.
-                # Formulera ett meddelande som börjar med användarnamn, följt av meddelandet.
-                # Skicka sedan meddelandet.
-                # Ex: <Andreas> Hej alla!
 
+                    if msg_to_send[:3] == "/me":
+                        self.client.publish(topic=self.topic, payload=f"{self.username} {msg_to_send[4:]}", qos=2,
+                                            retain=False)
+                    else:
+                        self.client.publish(topic=self.topic, payload=f"<{self.username}> {msg_to_send}", qos=2, retain=False)
 
             except queue.Empty:  # We will end up here if there was no user input
                 pass  # No user input, do nothing
@@ -153,3 +141,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
