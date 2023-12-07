@@ -1,4 +1,4 @@
-# MQTTinl-mning2
+# MQTT-Chatroom
 
 MQTT Chat Application
 Summary:
