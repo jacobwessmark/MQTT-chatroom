@@ -1,7 +1,5 @@
 # MQTT-Chatroom
-
-MQTT Chat Application
-Summary:
+*(Developed as part of my studies at KYH in Malmö)*
 
 This Python script is an MQTT-based chat application developed as part of a school project. It enables users to participate in chat rooms and engage in real-time conversations within selected chat groups. The application connects to an MQTT broker, allowing users to send and receive messages while being able to join different chat rooms.
 
